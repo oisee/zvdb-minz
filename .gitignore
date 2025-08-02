@@ -1,5 +1,6 @@
 # Build outputs
-*.a80
+# Note: We're keeping .a80 files for verification of performance claims
+# *.a80  # INTENTIONALLY NOT IGNORED - for transparency
 *.bin
 *.sna
 *.tap

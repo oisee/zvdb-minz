@@ -24,11 +24,21 @@ ZVDB (Z80 Vector Database) is a 1-bit quantized vector similarity search system 
 zvdb-minz/
 ├── README.md           # This file
 ├── zvdb.minz          # Main implementation
-├── zvdb_test.minz     # Test suite  
+├── zvdb.a80           # Generated Z80 assembly (for verification)
+├── zvdb_test.minz     # Test suite
+├── zvdb_test.a80      # Test suite assembly (for verification)
 ├── run_zvdb_tests.sh  # Test runner
 ├── ZVDB_README.md     # Performance analysis
 └── zvdb_experiments/  # Development iterations
 ```
+
+### 🔍 Verify Our Claims!
+
+The `.a80` assembly files are included so you can:
+- Count actual T-states for operations
+- Verify the SMC optimizations
+- Check the popcount LUT implementation
+- See exactly what code runs on your Z80
 
 ## 🛠️ Requirements
 
