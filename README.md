@@ -80,8 +80,8 @@ See [ZVDB_README.md](ZVDB_README.md) for detailed performance analysis with hone
 ## 🔗 Related Projects
 
 - **[MinZ Language](https://github.com/oisee/minz)** - The systems programming language for Z80
-- **[ZVDB Original](https://github.com/oisee/zvdb-z80)** - Pure assembly implementation
-- **[1-bit LLMs Paper](https://arxiv.org/abs/2402.17764)** - The BitNet b1.58 paper that inspired this
+- **[ZVDB ABAP Original](https://github.com/oisee/zvdb)** - Pure ABAP implementation
+- **[ZVDB Z80 ASM Reimplementation](https://github.com/oisee/zvdb-z80)** - Pure assembly implementation
 
 ## 🤝 Contributing
 
@@ -97,7 +97,7 @@ MIT License - See LICENSE file for details
 
 ## 🙏 Acknowledgments
 
-- The MinZ compiler team for making Z80 development fun again
+- The MinZ compiler team (=myself and my imaginary friend Claude Code) for making Z80 development fun again
 - The Z80 community for keeping vintage computing alive
 - Researchers working on 1-bit quantization making AI accessible to all hardware
 
