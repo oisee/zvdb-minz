@@ -50,7 +50,7 @@ The `.a80` assembly files are included so you can:
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/zvdb-minz
+git clone https://github.com/oisee/zvdb-minz
 cd zvdb-minz
 
 # Run tests (requires MinZ compiler)
@@ -80,7 +80,7 @@ See [ZVDB_README.md](ZVDB_README.md) for detailed performance analysis with hone
 ## 🔗 Related Projects
 
 - **[MinZ Language](https://github.com/oisee/minz)** - The systems programming language for Z80
-- **[ZVDB Original](https://github.com/yourusername/zvdb-z80)** - Pure assembly implementation
+- **[ZVDB Original](https://github.com/oisee/zvdb-z80)** - Pure assembly implementation
 - **[1-bit LLMs Paper](https://arxiv.org/abs/2402.17764)** - The BitNet b1.58 paper that inspired this
 
 ## 🤝 Contributing
