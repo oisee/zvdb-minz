@@ -1,0 +1,135 @@
+// ZVDB with Bit-Packed Storage
+// Using bits_8 for ultra-compact vector representation
+
+// 8-bit packed vector segment (stores 8 bits of a 256-bit vector)
+type VectorByte = bits_8 {
+    b0: 1, b1: 1, b2: 1, b3: 1,
+    b4: 1, b5: 1, b6: 1, b7: 1
+};
+
+// Compact hash entry using bit fields
+type HashEntry = bits_8 {
+    vector_id: 6,    // Support up to 64 vectors
+    occupied: 1,     // Is this slot occupied?
+    has_next: 1      // Does it have a collision chain?
+};
+
+// Global storage
+global packed_vectors: [VectorByte; 512] = [0; 512];  // 16 vectors * 32 bytes
+global hash_table: [HashEntry; 256] = [0; 256];
+global vector_count: u8 = 0;
+
+// Efficient popcount using Brian Kernighan's algorithm
+fn popcount(val: u8) -> u8 {
+    let count: u8 = 0;
+    let v: u8 = val;
+    while v != 0 {
+        v = v & (v - 1);  // Clear the lowest set bit
+        count = count + 1;
+    }
+    return count;
+}
+
+// Calculate Hamming distance between two packed vectors
+fn hamming_packed(idx1: u8, idx2: u8) -> u16 {
+    let distance: u16 = 0;
+    let base1: u16 = idx1 as u16 * 32;
+    let base2: u16 = idx2 as u16 * 32;
+    
+    for i in 0..32 {
+        let byte1: u8 = packed_vectors[base1 + i] as u8;
+        let byte2: u8 = packed_vectors[base2 + i] as u8;
+        distance = distance + popcount(byte1 ^ byte2) as u16;
+    }
+    
+    return distance;
+}
+
+// Add vector to packed storage
+fn add_packed_vector(data: *u8) -> u8 {
+    if vector_count >= 16 {
+        return 255;  // Full
+    }
+    
+    let idx: u8 = vector_count;
+    let base: u16 = idx as u16 * 32;
+    
+    // Copy 32 bytes to packed storage
+    for i in 0..32 {
+        packed_vectors[base + i] = data[i] as VectorByte;
+    }
+    
+    vector_count = vector_count + 1;
+    return idx;
+}
+
+// Simple hash function for vector
+fn hash_vector(idx: u8) -> u8 {
+    // XOR all bytes together for simple hash
+    let hash: u8 = 0;
+    let base: u16 = idx as u16 * 32;
+    
+    for i in 0..32 {
+        hash = hash ^ (packed_vectors[base + i] as u8);
+    }
+    
+    return hash;
+}
+
+// Insert into hash table
+fn insert_hash(idx: u8) -> void {
+    let hash: u8 = hash_vector(idx);
+    
+    // Create hash entry
+    let entry: HashEntry = 0 as HashEntry;
+    entry.vector_id = idx;
+    entry.occupied = 1;
+    entry.has_next = 0;
+    
+    // Simple linear probing for collisions
+    let slot: u8 = hash;
+    while (hash_table[slot] as u8 & 0x40) != 0 {  // Check occupied bit
+        slot = (slot + 1) & 0xFF;
+        if slot == hash {
+            return;  // Table full
+        }
+    }
+    
+    hash_table[slot] = entry;
+}
+
+fn main() -> void {
+    @print("ZVDB Bit-Packed Edition\n");
+    @print("=======================\n\n");
+    
+    // Create test vector
+    let test_vec: [u8; 32];
+    for i in 0..32 {
+        test_vec[i] = if (i & 1) == 0 { 0x55 } else { 0xAA };
+    }
+    
+    // Add to packed storage
+    let idx1: u8 = add_packed_vector(&test_vec[0]);
+    @print("Added vector at index {}\n", idx1);
+    
+    // Create another test vector
+    for i in 0..32 {
+        test_vec[i] = 0xFF;
+    }
+    let idx2: u8 = add_packed_vector(&test_vec[0]);
+    @print("Added vector at index {}\n", idx2);
+    
+    // Calculate Hamming distance
+    let dist: u16 = hamming_packed(idx1, idx2);
+    @print("Hamming distance: {} bits\n", dist);
+    
+    // Insert into hash table
+    insert_hash(idx1);
+    insert_hash(idx2);
+    @print("Vectors indexed in hash table\n");
+    
+    @print("\n✅ Bit-packed ZVDB demonstrates:\n");
+    @print("   • Compact bit field storage\n");
+    @print("   • Efficient packing (6 bits for ID)\n");
+    @print("   • Type-safe bit manipulation\n");
+}

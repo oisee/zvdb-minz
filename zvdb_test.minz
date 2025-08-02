@@ -1,0 +1,253 @@
+// ZVDB E2E Test Suite
+// Comprehensive testing of vector database functionality
+
+const VECTOR_BYTES: u8 = 32;
+
+struct Vector256 {
+    data: [u8; 32]
+}
+
+// Test counter
+global tests_passed: u8 = 0;
+global tests_failed: u8 = 0;
+
+// Simple assert function
+fn assert_equal(actual: u16, expected: u16, test_name: *u8) -> void {
+    if actual == expected {
+        tests_passed = tests_passed + 1;
+        @print("✓ {}: PASS\n", test_name);
+    } else {
+        tests_failed = tests_failed + 1;
+        @print("✗ {}: FAIL (got {}, expected {})\n", test_name, actual, expected);
+    }
+}
+
+// Test popcount function
+fn test_popcount() -> void {
+    @print("\n=== Popcount Tests ===\n");
+    
+    // Test known values
+    let pc0: u8 = popcount_bits(0x00);
+    assert_equal(pc0 as u16, 0, "popcount(0x00)");
+    
+    let pc1: u8 = popcount_bits(0x01);
+    assert_equal(pc1 as u16, 1, "popcount(0x01)");
+    
+    let pc3: u8 = popcount_bits(0x03);
+    assert_equal(pc3 as u16, 2, "popcount(0x03)");
+    
+    let pcF: u8 = popcount_bits(0x0F);
+    assert_equal(pcF as u16, 4, "popcount(0x0F)");
+    
+    let pc55: u8 = popcount_bits(0x55);
+    assert_equal(pc55 as u16, 4, "popcount(0x55)");
+    
+    let pcAA: u8 = popcount_bits(0xAA);
+    assert_equal(pcAA as u16, 4, "popcount(0xAA)");
+    
+    let pcFF: u8 = popcount_bits(0xFF);
+    assert_equal(pcFF as u16, 8, "popcount(0xFF)");
+}
+
+// Manual bit counting for testing
+fn popcount_bits(val: u8) -> u8 {
+    let count: u8 = 0;
+    let v: u8 = val;
+    
+    for i in 0..8 {
+        if (v & 1) != 0 {
+            count = count + 1;
+        }
+        v = v >> 1;
+    }
+    
+    return count;
+}
+
+// Test Hamming distance
+fn test_hamming() -> void {
+    @print("\n=== Hamming Distance Tests ===\n");
+    
+    let v1: Vector256;
+    let v2: Vector256;
+    
+    // Test 1: Identical vectors
+    for i in 0..VECTOR_BYTES {
+        v1.data[i] = 0x55;
+        v2.data[i] = 0x55;
+    }
+    let dist1: u16 = calc_hamming(&v1, &v2);
+    assert_equal(dist1, 0, "Identical vectors");
+    
+    // Test 2: Opposite vectors
+    for i in 0..VECTOR_BYTES {
+        v1.data[i] = 0x00;
+        v2.data[i] = 0xFF;
+    }
+    let dist2: u16 = calc_hamming(&v1, &v2);
+    assert_equal(dist2, 256, "Opposite vectors");
+    
+    // Test 3: Half different
+    for i in 0..VECTOR_BYTES {
+        v1.data[i] = 0x0F;  // 00001111
+        v2.data[i] = 0xF0;  // 11110000
+    }
+    let dist3: u16 = calc_hamming(&v1, &v2);
+    assert_equal(dist3, 256, "Half different");
+    
+    // Test 4: One bit different
+    for i in 0..VECTOR_BYTES {
+        v1.data[i] = 0x00;
+        v2.data[i] = 0x00;
+    }
+    v2.data[0] = 0x01;  // Only first bit different
+    let dist4: u16 = calc_hamming(&v1, &v2);
+    assert_equal(dist4, 1, "One bit different");
+}
+
+// Calculate Hamming distance
+fn calc_hamming(v1: *Vector256, v2: *Vector256) -> u16 {
+    let distance: u16 = 0;
+    
+    for i in 0..VECTOR_BYTES {
+        let xor_val: u8 = v1.data[i] ^ v2.data[i];
+        let bits: u8 = popcount_bits(xor_val);
+        distance = distance + bits as u16;
+    }
+    
+    return distance;
+}
+
+// Test similarity scoring
+fn test_similarity() -> void {
+    @print("\n=== Similarity Score Tests ===\n");
+    
+    let v1: Vector256;
+    let v2: Vector256;
+    
+    // Test 1: Identical = max similarity
+    for i in 0..VECTOR_BYTES {
+        v1.data[i] = 0xAA;
+        v2.data[i] = 0xAA;
+    }
+    let sim1: i16 = calc_similarity(&v1, &v2);
+    // Cast i16 to u16 for comparison (256 stays as 256)
+    let sim1_u: u16 = sim1 as u16;
+    assert_equal(sim1_u, 256, "Identical similarity");
+    
+    // Test 2: Opposite = min similarity
+    for i in 0..VECTOR_BYTES {
+        v1.data[i] = 0x00;
+        v2.data[i] = 0xFF;
+    }
+    let sim2: i16 = calc_similarity(&v1, &v2);
+    // Note: -256 as u16 wraps around, so we test differently
+    if sim2 == -256 {
+        tests_passed = tests_passed + 1;
+        @print("✓ Opposite similarity: PASS\n");
+    } else {
+        tests_failed = tests_failed + 1;
+        @print("✗ Opposite similarity: FAIL\n");
+    }
+    
+    // Test 3: 50% similar
+    for i in 0..VECTOR_BYTES {
+        v1.data[i] = 0x0F;
+        v2.data[i] = 0x00;
+    }
+    let sim3: i16 = calc_similarity(&v1, &v2);
+    let sim3_u: u16 = sim3 as u16;
+    assert_equal(sim3_u, 128, "Half similar");
+}
+
+// Calculate similarity score
+fn calc_similarity(v1: *Vector256, v2: *Vector256) -> i16 {
+    let hamming: u16 = calc_hamming(v1, v2);
+    let doubled: u16 = hamming << 1;
+    return 256 - doubled as i16;
+}
+
+// Test vector search
+fn test_search() -> void {
+    @print("\n=== Vector Search Tests ===\n");
+    
+    // Create test database
+    let db: [Vector256; 4];
+    
+    // Vector 0: All zeros
+    for i in 0..VECTOR_BYTES {
+        db[0].data[i] = 0x00;
+    }
+    
+    // Vector 1: All ones
+    for i in 0..VECTOR_BYTES {
+        db[1].data[i] = 0xFF;
+    }
+    
+    // Vector 2: Pattern
+    for i in 0..VECTOR_BYTES {
+        db[2].data[i] = 0x55;
+    }
+    
+    // Vector 3: Inverse pattern
+    for i in 0..VECTOR_BYTES {
+        db[3].data[i] = 0xAA;
+    }
+    
+    // Test 1: Query matches vector 0
+    let query1: Vector256;
+    for i in 0..VECTOR_BYTES {
+        query1.data[i] = 0x00;
+    }
+    let best1: u8 = find_nearest(&query1, &db[0], 4);
+    let best1_u: u16 = best1 as u16;
+    assert_equal(best1_u, 0, "Find exact match");
+    
+    // Test 2: Query closest to vector 2
+    let query2: Vector256;
+    for i in 0..VECTOR_BYTES {
+        query2.data[i] = 0x54;  // Close to 0x55
+    }
+    let best2: u8 = find_nearest(&query2, &db[0], 4);
+    let best2_u: u16 = best2 as u16;
+    assert_equal(best2_u, 2, "Find nearest");
+}
+
+// Find nearest vector (simple linear search)
+fn find_nearest(query: *Vector256, db: *Vector256, count: u8) -> u8 {
+    let best_id: u8 = 255;
+    let best_dist: u16 = 65535;
+    
+    for i in 0..count {
+        let dist: u16 = calc_hamming(query, &db[i]);
+        if dist < best_dist {
+            best_dist = dist;
+            best_id = i;
+        }
+    }
+    
+    return best_id;
+}
+
+// Main test runner
+fn main() -> void {
+    @print("ZVDB E2E Test Suite\n");
+    @print("==================\n");
+    
+    // Run all tests
+    test_popcount();
+    test_hamming();
+    test_similarity();
+    test_search();
+    
+    // Summary
+    @print("\n=== Test Summary ===\n");
+    @print("Passed: {}\n", tests_passed);
+    @print("Failed: {}\n", tests_failed);
+    
+    if tests_failed == 0 {
+        @print("\n✅ All tests passed!\n");
+    } else {
+        @print("\n❌ Some tests failed!\n");
+    }
+}

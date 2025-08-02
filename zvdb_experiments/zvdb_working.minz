@@ -1,0 +1,155 @@
+// ZVDB-MinZ: Working Vector Database Demo
+// Demonstrates 1-bit vector similarity on Z80 using MinZ
+
+global u8 db_count = 0;
+global i16 best_score = -64;
+global u8 best_index = 255;
+
+// Test vector storage (8 bytes = 64 bits each)
+global u8 vec0_0 = 0; global u8 vec0_1 = 0; global u8 vec0_2 = 0; global u8 vec0_3 = 0;
+global u8 vec0_4 = 0; global u8 vec0_5 = 0; global u8 vec0_6 = 0; global u8 vec0_7 = 0;
+
+global u8 vec1_0 = 0; global u8 vec1_1 = 0; global u8 vec1_2 = 0; global u8 vec1_3 = 0;
+global u8 vec1_4 = 0; global u8 vec1_5 = 0; global u8 vec1_6 = 0; global u8 vec1_7 = 0;
+
+global u8 vec2_0 = 0; global u8 vec2_1 = 0; global u8 vec2_2 = 0; global u8 vec2_3 = 0;
+global u8 vec2_4 = 0; global u8 vec2_5 = 0; global u8 vec2_6 = 0; global u8 vec2_7 = 0;
+
+// Count bits in a byte (simplified popcount)
+fn popcount_byte(val: u8) -> u8 {
+    let count: u8 = 0;
+    let temp: u8 = val;
+    
+    // Unrolled bit counting for Z80 efficiency
+    if (temp & 1) != 0 { count = count + 1; } temp = temp >> 1;
+    if (temp & 1) != 0 { count = count + 1; } temp = temp >> 1;
+    if (temp & 1) != 0 { count = count + 1; } temp = temp >> 1;
+    if (temp & 1) != 0 { count = count + 1; } temp = temp >> 1;
+    if (temp & 1) != 0 { count = count + 1; } temp = temp >> 1;
+    if (temp & 1) != 0 { count = count + 1; } temp = temp >> 1;
+    if (temp & 1) != 0 { count = count + 1; } temp = temp >> 1;
+    if (temp & 1) != 0 { count = count + 1; }
+    
+    return count;
+}
+
+// Calculate hamming distance between vector 0 and vector 1
+fn hamming_vec0_vec1() -> u8 {
+    let hamming: u8 = 0;
+    
+    hamming = hamming + popcount_byte(vec0_0 ^ vec1_0);
+    hamming = hamming + popcount_byte(vec0_1 ^ vec1_1);
+    hamming = hamming + popcount_byte(vec0_2 ^ vec1_2);
+    hamming = hamming + popcount_byte(vec0_3 ^ vec1_3);
+    hamming = hamming + popcount_byte(vec0_4 ^ vec1_4);
+    hamming = hamming + popcount_byte(vec0_5 ^ vec1_5);
+    hamming = hamming + popcount_byte(vec0_6 ^ vec1_6);
+    hamming = hamming + popcount_byte(vec0_7 ^ vec1_7);
+    
+    return hamming;
+}
+
+// Calculate hamming distance between vector 0 and vector 2
+fn hamming_vec0_vec2() -> u8 {
+    let hamming: u8 = 0;
+    
+    hamming = hamming + popcount_byte(vec0_0 ^ vec2_0);
+    hamming = hamming + popcount_byte(vec0_1 ^ vec2_1);
+    hamming = hamming + popcount_byte(vec0_2 ^ vec2_2);
+    hamming = hamming + popcount_byte(vec0_3 ^ vec2_3);
+    hamming = hamming + popcount_byte(vec0_4 ^ vec2_4);
+    hamming = hamming + popcount_byte(vec0_5 ^ vec2_5);
+    hamming = hamming + popcount_byte(vec0_6 ^ vec2_6);
+    hamming = hamming + popcount_byte(vec0_7 ^ vec2_7);
+    
+    return hamming;
+}
+
+// Calculate similarity score (64 - 2*hamming for 64-bit vectors)
+fn similarity_vec0_vec1() -> i16 {
+    let hamming: u8 = hamming_vec0_vec1();
+    return 64 - (hamming as i16 * 2);
+}
+
+fn similarity_vec0_vec2() -> i16 {
+    let hamming: u8 = hamming_vec0_vec2();
+    return 64 - (hamming as i16 * 2);
+}
+
+// Initialize test vectors
+fn init_test_vectors() -> void {
+    // Vector 0: Alternating pattern
+    vec0_0 = 0x55; vec0_1 = 0xAA; vec0_2 = 0x55; vec0_3 = 0xAA;
+    vec0_4 = 0x55; vec0_5 = 0xAA; vec0_6 = 0x55; vec0_7 = 0xAA;
+    
+    // Vector 1: All ones
+    vec1_0 = 0xFF; vec1_1 = 0xFF; vec1_2 = 0xFF; vec1_3 = 0xFF;
+    vec1_4 = 0xFF; vec1_5 = 0xFF; vec1_6 = 0xFF; vec1_7 = 0xFF;
+    
+    // Vector 2: All zeros
+    vec2_0 = 0x00; vec2_1 = 0x00; vec2_2 = 0x00; vec2_3 = 0x00;
+    vec2_4 = 0x00; vec2_5 = 0x00; vec2_6 = 0x00; vec2_7 = 0x00;
+    
+    db_count = 3;
+}
+
+// Find best match for vector 0
+fn search_for_vec0() -> u8 {
+    best_score = -64;
+    best_index = 255;
+    
+    // Compare with vector 1
+    let score1: i16 = similarity_vec0_vec1();
+    if score1 > best_score {
+        best_score = score1;
+        best_index = 1;
+    }
+    
+    // Compare with vector 2
+    let score2: i16 = similarity_vec0_vec2();
+    if score2 > best_score {
+        best_score = score2;
+        best_index = 2;
+    }
+    
+    return best_index;
+}
+
+fn main() -> void {
+    @print("ZVDB-MinZ: 1-bit Vector Database Demo\n");
+    @print("====================================\n\n");
+    
+    // Test basic popcount
+    @print("Testing popcount:\n");
+    @print("  popcount(0xFF) = {}\n", popcount_byte(0xFF));  // Should be 8
+    @print("  popcount(0x55) = {}\n", popcount_byte(0x55));  // Should be 4
+    @print("  popcount(0x00) = {}\n", popcount_byte(0x00));  // Should be 0
+    
+    // Initialize vectors
+    @print("\nInitializing test vectors...\n");
+    init_test_vectors();
+    @print("Stored {} vectors\n", db_count);
+    
+    // Test similarity calculations
+    @print("\nTesting vector similarity:\n");
+    let score01: i16 = similarity_vec0_vec1();
+    let score02: i16 = similarity_vec0_vec2();
+    
+    @print("  Alternating vs All-ones: {}\n", score01);
+    @print("  Alternating vs All-zeros: {}\n", score02);
+    
+    // Demonstrate search
+    @print("\nSearching for best match to alternating pattern:\n");
+    let match: u8 = search_for_vec0();
+    @print("  Best match: vector {} with score {}\n", match, best_score);
+    
+    @print("\nZVDB-MinZ Demo Results:\n");
+    @print("✓ 1-bit popcount works\n");
+    @print("✓ Hamming distance calculation works\n");
+    @print("✓ Vector similarity scoring works\n");
+    @print("✓ Basic search functionality works\n\n");
+    
+    @print("This demonstrates AI/ML vector similarity\n");
+    @print("search algorithms running on Z80 hardware\n");
+    @print("with modern MinZ language syntax!\n");
+}

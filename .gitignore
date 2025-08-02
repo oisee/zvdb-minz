@@ -1,0 +1,20 @@
+# Build outputs
+*.a80
+*.bin
+*.sna
+*.tap
+*.z80
+
+# Intermediate files
+*.mir
+*.o
+*.lst
+
+# Editor files
+.vscode/
+*.swp
+*~
+
+# OS files
+.DS_Store
+Thumbs.db

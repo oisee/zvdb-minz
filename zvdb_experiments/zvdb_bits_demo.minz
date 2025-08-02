@@ -1,0 +1,91 @@
+// ZVDB with Bit Structure Demo
+// Demonstrating bit-packed storage capabilities
+
+// 8-bit hash entry with bit fields
+type HashEntry = bits_8 {
+    vector_id: 6,    // Support up to 64 vectors (0-63)
+    occupied: 1,     // Is this slot occupied?
+    chain: 1         // Has collision chain?
+};
+
+// 16-bit similarity result
+type SimResult = bits_16 {
+    vector_id: 8,    // Vector ID (0-255)
+    score: 7,        // Similarity score (0-127 as percentage)
+    valid: 1         // Valid result flag
+};
+
+// Global storage
+global test_entry: HashEntry;
+global test_result: SimResult;
+
+// Test bit field manipulation
+fn test_hash_entry() -> void {
+    // Create and manipulate hash entry
+    let entry: HashEntry;
+    
+    // Set fields
+    entry.vector_id = 42;     // Store vector ID 42
+    entry.occupied = 1;       // Mark as occupied
+    entry.chain = 0;          // No collision chain
+    
+    // Store globally
+    test_entry = entry;
+    
+    // Read back and verify
+    let id: u8 = test_entry.vector_id;
+    let occ: u8 = test_entry.occupied;
+    
+    @print("Hash Entry - ID: {}, Occupied: {}\n", id, occ);
+}
+
+fn test_sim_result() -> void {
+    // Create similarity result  
+    let result: SimResult;
+    
+    result.vector_id = 7;     // Vector 7
+    result.score = 95;        // 95% similarity
+    result.valid = 1;         // Valid result
+    
+    test_result = result;
+    
+    // Read back
+    let id: u8 = test_result.vector_id;
+    let score: u8 = test_result.score;
+    
+    @print("Similarity - Vector: {}, Score: {}%\n", id, score);
+}
+
+// Demonstrate bit packing efficiency
+fn show_efficiency() -> void {
+    @print("\nMemory Efficiency:\n");
+    @print("==================\n");
+    
+    @print("Traditional struct:\n");
+    @print("  vector_id: u8 (8 bits)\n");
+    @print("  occupied: bool (8 bits)\n");
+    @print("  chain: bool (8 bits)\n");
+    @print("  Total: 24 bits (3 bytes)\n\n");
+    
+    @print("Bit-packed HashEntry:\n");
+    @print("  vector_id: 6 bits\n");
+    @print("  occupied: 1 bit\n");
+    @print("  chain: 1 bit\n");
+    @print("  Total: 8 bits (1 byte)\n");
+    @print("  Savings: 67% less memory!\n");
+}
+
+fn main() -> void {
+    @print("ZVDB Bit Structure Demo\n");
+    @print("=======================\n\n");
+    
+    test_hash_entry();
+    test_sim_result();
+    show_efficiency();
+    
+    @print("\n✅ Benefits for ZVDB:\n");
+    @print("   • Compact hash tables\n");
+    @print("   • Efficient result packing\n");
+    @print("   • Type-safe bit manipulation\n");
+    @print("   • 3x memory savings!\n");
+}
