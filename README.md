@@ -1,6 +1,6 @@
 # ZVDB-MinZ
 
-A 256-bit vector database implementation in [MinZ](https://github.com/todo/minz-ts), demonstrating modern AI/ML algorithms on Z80 hardware.
+A 256-bit vector database implementation in [MinZ](https://github.com/oisee/minz), demonstrating modern AI/ML algorithms on Z80 hardware.
 
 ## 🎯 What is ZVDB?
 
@@ -42,7 +42,7 @@ The `.a80` assembly files are included so you can:
 
 ## 🛠️ Requirements
 
-- [MinZ compiler](https://github.com/todo/minz-ts) v0.9.0+
+- [MinZ compiler](https://github.com/oisee/minz) v0.9.0+
 - Z80 assembler (sjasmplus) for final binary generation
 - Z80 hardware or emulator for execution
 
@@ -79,7 +79,7 @@ See [ZVDB_README.md](ZVDB_README.md) for detailed performance analysis with hone
 
 ## 🔗 Related Projects
 
-- **[MinZ Language](https://github.com/todo/minz-ts)** - The systems programming language for Z80
+- **[MinZ Language](https://github.com/oisee/minz)** - The systems programming language for Z80
 - **[ZVDB Original](https://github.com/yourusername/zvdb-z80)** - Pure assembly implementation
 - **[1-bit LLMs Paper](https://arxiv.org/abs/2402.17764)** - The BitNet b1.58 paper that inspired this
 
