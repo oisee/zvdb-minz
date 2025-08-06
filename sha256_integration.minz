@@ -1,0 +1,104 @@
+// SHA256 Integration Example for MinZ
+// Shows how to call external SHA256 assembly implementation
+
+// External assembly function declarations
+// These would link to our sha256_z80.asm implementation
+extern fn sha256_init_system() -> void;
+extern fn sha256_init() -> void;
+extern fn sha256_process_block() -> void;
+extern fn sha256_test_single_block() -> void;
+
+// Memory-mapped access to hash result
+const HASH_STATE: u16 = 0x9800;  // From sha256_z80.asm
+const MSG_BLOCK: u16 = 0x9820;   // Message buffer
+
+// High-level SHA256 interface
+pub fn sha256_hash(message: &[u8]) -> [u8; 32] {
+    // Initialize SHA256 system (one-time setup)
+    sha256_init_system();
+    
+    // Copy message to assembly buffer
+    // This would need proper padding implementation
+    copy_message_to_buffer(message);
+    
+    // Perform hash
+    sha256_init();
+    sha256_process_block();
+    
+    // Read result from memory
+    let result: [u8; 32];
+    
+    // Use inline assembly to read the hash state
+    asm {
+        ; Read 32-byte hash result from HASH_STATE
+        LD HL, {HASH_STATE}
+        LD DE, result
+        LD BC, 32
+        LDIR
+    }
+    
+    return result;
+}
+
+fn copy_message_to_buffer(message: &[u8]) {
+    // Inline assembly to copy and pad message
+    asm {
+        ; Clear message block
+        LD HL, {MSG_BLOCK}
+        LD DE, {MSG_BLOCK} + 1
+        LD BC, 63
+        LD (HL), 0
+        LDIR
+        
+        ; Copy message (simplified - would need length handling)
+        ; This is a basic example
+    }
+}
+
+// Test function using our assembly implementation
+pub fn test_sha256_empty_string() -> bool {
+    // Call assembly test function
+    sha256_test_single_block();
+    
+    // Expected result for empty string:
+    // e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+    let expected: [u8; 32] = [
+        0xe3, 0xb0, 0xc4, 0x42, 0x98, 0xfc, 0x1c, 0x14, 
+        0x9a, 0xfb, 0xf4, 0xc8, 0x99, 0x6f, 0xb9, 0x24,
+        0x27, 0xae, 0x41, 0xe4, 0x64, 0x9b, 0x93, 0x4c, 
+        0xa4, 0x95, 0x99, 0x1b, 0x78, 0x52, 0xb8, 0x55
+    ];
+    
+    // Read actual result and compare
+    let actual = read_hash_result();
+    return compare_hashes(expected, actual);
+}
+
+fn read_hash_result() -> [u8; 32] {
+    let result: [u8; 32];
+    asm {
+        LD HL, {HASH_STATE}
+        LD DE, result  
+        LD BC, 32
+        LDIR
+    }
+    return result;
+}
+
+fn compare_hashes(a: [u8; 32], b: [u8; 32]) -> bool {
+    for i in 0..32 {
+        if a[i] != b[i] {
+            return false;
+        }
+    }
+    return true;
+}
+
+// Main function demonstrating usage
+fn main() -> u8 {
+    if test_sha256_empty_string() {
+        return 0;  // Success
+    } else {
+        return 1;  // Failure
+    }
+}

@@ -1,5 +1,5 @@
 // MinZ C generated code
-// Generated: 2025_08_06 23:20:56
+// Generated: 2025-08-06 23:20:56
 // Target: Standard C (C99)
 
 #include <stdio.h>
@@ -11,19 +11,19 @@
 // Type definitions
 typedef uint8_t u8;
 typedef uint16_t u16;
-typedef uint32_t u24; // 24_bit emulated as 32_bit
+typedef uint32_t u24; // 24-bit emulated as 32-bit
 typedef uint32_t u32;
 typedef int8_t i8;
 typedef int16_t i16;
-typedef int32_t i24; // 24_bit emulated as 32_bit
+typedef int32_t i24; // 24-bit emulated as 32-bit
 typedef int32_t i32;
 
-// Fixed_point arithmetic helpers
-typedef int16_t f8_8;   // 8.8 fixed_point
-typedef int16_t f_8;    // .8 fixed_point
-typedef int16_t f_16;   // .16 fixed_point
-typedef int32_t f16_8;  // 16.8 fixed_point
-typedef int32_t f8_16;  // 8.16 fixed_point
+// Fixed-point arithmetic helpers
+typedef int16_t f8_8;   // 8.8 fixed-point
+typedef int16_t f_8;    // .8 fixed-point
+typedef int16_t f_16;   // .16 fixed-point
+typedef int32_t f16_8;  // 16.8 fixed-point
+typedef int32_t f8_16;  // 8.16 fixed-point
 
 #define F8_8_SHIFT 8
 #define F_8_SHIFT 8
@@ -31,7 +31,7 @@ typedef int32_t f8_16;  // 8.16 fixed_point
 #define F16_8_SHIFT 8
 #define F8_16_SHIFT 16
 
-// String type (length_prefixed)
+// String type (length-prefixed)
 typedef struct {
     uint16_t len;
     char* data;
@@ -71,16 +71,16 @@ void print_newline() {
 }
 
 void print_string(String* str) {
-    if (str && str_>data) {
-        printf("%.*s", str_>len, str_>data);
+    if (str && str->data) {
+        printf("%.*s", str->len, str->data);
     }
 }
 
 // Function declarations
-u8 _Users_alice_dev_zvdb_minz_simple_add_add_numbers$u8$u8(u8 a, u8 b);
-u8 _Users_alice_dev_zvdb_minz_simple_add_main(void);
+u8 _Users_alice_dev_zvdb-minz_simple_add_add_numbers$u8$u8(u8 a, u8 b);
+u8 _Users_alice_dev_zvdb-minz_simple_add_main(void);
 
-u8 _Users_alice_dev_zvdb_minz_simple_add_add_numbers$u8$u8(u8 a, u8 b) {
+u8 _Users_alice_dev_zvdb-minz_simple_add_add_numbers$u8$u8(u8 a, u8 b) {
     uintptr_t r1 = 0;
     uintptr_t r2 = 0;
     uintptr_t r3 = 0;
@@ -93,7 +93,7 @@ u8 _Users_alice_dev_zvdb_minz_simple_add_add_numbers$u8$u8(u8 a, u8 b) {
     return r5;
 }
 
-u8 _Users_alice_dev_zvdb_minz_simple_add_main(void) {
+u8 _Users_alice_dev_zvdb-minz_simple_add_main(void) {
     uintptr_t r1 = 0;
     uintptr_t r2 = 0;
     uintptr_t r3 = 0;
@@ -119,7 +119,7 @@ u8 _Users_alice_dev_zvdb_minz_simple_add_main(void) {
     r7 = y;
     r8 = x;
     r9 = y;
-    r10 = _Users_alice_dev_zvdb_minz_simple_add_add_numbers$u8$u8(r8, r9);
+    r10 = _Users_alice_dev_zvdb-minz_simple_add_add_numbers$u8$u8(r8, r9);
     result = r10;
     r11 = result;
     return r11;
@@ -127,5 +127,5 @@ u8 _Users_alice_dev_zvdb_minz_simple_add_main(void) {
 
 // C main wrapper
 int main(int argc, char** argv) {
-    return (int)_Users_alice_dev_zvdb_minz_simple_add_main();
+    return (int)_Users_alice_dev_zvdb-minz_simple_add_main();
 }
