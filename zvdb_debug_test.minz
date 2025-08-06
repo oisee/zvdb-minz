@@ -1,0 +1,63 @@
+// ZVDB TAS Debugging Test
+// Minimal version for testing TAS framework
+
+const VECTOR_SIZE: u8 = 8;  // Small vectors for testing
+
+struct TestVector {
+    data: [u8; 8]
+}
+
+global test_v1: TestVector;
+global test_v2: TestVector;
+
+fn popcount_simple(val: u8) -> u8 {
+    let count: u8 = 0;
+    let temp: u8 = val;
+    
+    // Simple bit counting - easy to profile
+    if (temp & 1) != 0 { count = count + 1; }
+    temp = temp >> 1;
+    if (temp & 1) != 0 { count = count + 1; }
+    temp = temp >> 1;
+    if (temp & 1) != 0 { count = count + 1; }
+    temp = temp >> 1;
+    if (temp & 1) != 0 { count = count + 1; }
+    temp = temp >> 1;
+    if (temp & 1) != 0 { count = count + 1; }
+    temp = temp >> 1;
+    if (temp & 1) != 0 { count = count + 1; }
+    temp = temp >> 1;
+    if (temp & 1) != 0 { count = count + 1; }
+    temp = temp >> 1;
+    if (temp & 1) != 0 { count = count + 1; }
+    
+    return count;
+}
+
+fn hamming_test(v1: TestVector, v2: TestVector) -> u8 {
+    let dist: u8 = 0;
+    
+    for i in 0..VECTOR_SIZE {
+        let xor_val: u8 = v1.data[i] ^ v2.data[i];
+        let bits: u8 = popcount_simple(xor_val);
+        dist = dist + bits;
+    }
+    
+    return dist;
+}
+
+fn main() -> void {
+    @print("ZVDB TAS Debug Test\n");
+    
+    // Initialize test vectors
+    for i in 0..VECTOR_SIZE {
+        test_v1.data[i] = 0x55;  // Pattern
+        test_v2.data[i] = 0xAA;  // Opposite
+    }
+    
+    // This should be profileable
+    let distance: u8 = hamming_test(test_v1, test_v2);
+    @print("Hamming distance: {}\n", distance);
+    
+    @print("TAS Test Complete!\n");
+}

@@ -1,0 +1,16 @@
+// Simple Hello World for testing cross-platform compilation
+
+fn main() -> void {
+    @print("Hello, World from MinZ!\n");
+    @print("Testing cross-platform compilation:\n");
+    @print("  - WebAssembly\n");
+    @print("  - C99\n");
+    @print("  - LLVM IR\n");
+    
+    // Test some basic computations
+    let x: u8 = 42;
+    let y: u8 = 13;
+    let sum: u8 = x + y;
+    
+    @print("The answer is: {}\n", sum);
+}

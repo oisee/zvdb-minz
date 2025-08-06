@@ -1,0 +1,13 @@
+// Simple addition program for cross-platform testing
+// Returns exit code with the result
+
+fn add_numbers(a: u8, b: u8) -> u8 {
+    return a + b;
+}
+
+fn main() -> u8 {
+    let x: u8 = 42;
+    let y: u8 = 13;
+    let result: u8 = add_numbers(x, y);
+    return result;  // Will be exit code: 55
+}

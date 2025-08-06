@@ -45,12 +45,25 @@ fn popcount(val: u8) -> u8 {
     return lut[val];
 }
 
-// Hamming distance between vectors
-fn hamming(v1: *Vector256, v2: *Vector256) -> u16 {
+// Hamming distance between vectors by index
+fn hamming_by_index(idx1: u8, idx2: u8) -> u16 {
     let dist: u16 = 0;
     
     for i in 0..VECTOR_BYTES {
-        let xor_val: u8 = v1.data[i] ^ v2.data[i];
+        let xor_val: u8 = vectors[idx1].data[i] ^ vectors[idx2].data[i];
+        let pc: u8 = popcount(xor_val);
+        dist = dist + pc as u16;
+    }
+    
+    return dist;
+}
+
+// Hamming distance between query and stored vector
+fn hamming_query(query: Vector256, idx: u8) -> u16 {
+    let dist: u16 = 0;
+    
+    for i in 0..VECTOR_BYTES {
+        let xor_val: u8 = query.data[i] ^ vectors[idx].data[i];
         let pc: u8 = popcount(xor_val);
         dist = dist + pc as u16;
     }
@@ -59,7 +72,7 @@ fn hamming(v1: *Vector256, v2: *Vector256) -> u16 {
 }
 
 // Add vector to database
-fn add_vector(vec: *Vector256) -> u8 {
+fn add_vector(vec: Vector256) -> u8 {
     if count >= MAX_VECTORS {
         return 255;
     }
@@ -76,14 +89,14 @@ fn add_vector(vec: *Vector256) -> u8 {
 }
 
 // Find best match
-fn find_best(query: *Vector256) -> SearchResult {
+fn find_best(query: Vector256) -> SearchResult {
     let result: SearchResult;
     result.vector_id = 255;
     result.hamming = 256;
     result.score = -256;
     
     for i in 0..count {
-        let dist: u16 = hamming(query, &vectors[i]);
+        let dist: u16 = hamming_query(query, i);
         if dist < result.hamming {
             result.vector_id = i;
             result.hamming = dist;
@@ -107,19 +120,19 @@ fn create_tests() -> void {
             vec.data[i] = 0xAA;
         }
     }
-    add_vector(&vec);
+    add_vector(vec);
     
     // Vector 1: All ones
     for i in 0..VECTOR_BYTES {
         vec.data[i] = 0xFF;
     }
-    add_vector(&vec);
+    add_vector(vec);
     
     // Vector 2: All zeros
     for i in 0..VECTOR_BYTES {
         vec.data[i] = 0x00;
     }
-    add_vector(&vec);
+    add_vector(vec);
 }
 
 fn main() -> void {
@@ -136,8 +149,8 @@ fn main() -> void {
     @print("Database has {} vectors\n\n", count);
     
     // Test similarity
-    let h01: u16 = hamming(&vectors[0], &vectors[1]);
-    let h02: u16 = hamming(&vectors[0], &vectors[2]);
+    let h01: u16 = hamming_by_index(0, 1);
+    let h02: u16 = hamming_by_index(0, 2);
     
     @print("Hamming distances:\n");
     @print("  V0 vs V1: {} bits\n", h01);
@@ -154,7 +167,7 @@ fn main() -> void {
         }
     }
     
-    let result: SearchResult = find_best(&query);
+    let result: SearchResult = find_best(query);
     @print("Best match: Vector {}\n", result.vector_id);
     @print("Hamming: {} bits\n", result.hamming);
     @print("Score: {}\n", result.score);
